@@ -1,0 +1,27 @@
+{
+  "n_encounters_raw": 101766,
+  "n_after_cohort": 69990,
+  "n_train": 52492,
+  "n_test": 17498,
+  "base_rate_test": 0.09069607955194879,
+  "auc": 0.6352121641343267,
+  "auc_gradient_boosting_ceiling": 0.6439785547815458,
+  "auc_published_logreg": 0.642,
+  "auc_published_xgboost_best": 0.667,
+  "average_precision": 0.14630806051217585,
+  "threshold_moderate": -2.3376854969058924,
+  "threshold_high": -1.932730603099604,
+  "high_band_precision": 0.1543257989088075,
+  "high_band_recall": 0.2495274102079395,
+  "high_band_f1": 0.19070551408620273,
+  "band_fractions": {
+    "low": 0.6016116127557435,
+    "moderate": 0.25174305634929706,
+    "high": 0.14664533089495943
+  },
+  "band_readmission_rates": {
+    "low": 0.061555998860074096,
+    "moderate": 0.12326901248581158,
+    "high": 0.1543257989088075
+  }
+}

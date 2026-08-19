@@ -1,0 +1,48 @@
+fhe-hospital-readmission
+Copyright 2026 Brad Levergood
+
+This product includes software developed by Brad Levergood, licensed under the
+Apache License, Version 2.0. See the LICENSE file.
+
+
+DATA
+----
+
+data/test_records.csv and data/feature_bounds.csv are derived from:
+
+  Clore, J., Cios, K., DeShazo, J., & Strack, B. (2014).
+  Diabetes 130-US Hospitals for Years 1999-2008 [Dataset].
+  UCI Machine Learning Repository.
+  https://doi.org/10.24432/C5230J
+
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+The dataset accompanies:
+
+  Beata Strack, Jonathan DeShazo, Chris Gennings, Juan Olmo,
+  Sebastian Ventura, Krzysztof Cios, John Clore.
+  "Impact of HbA1c Measurement on Hospital Readmission Rates: Analysis of
+  70,000 Clinical Database Patient Records."
+  BioMed Research International, vol. 2014, 2014.
+
+The records redistributed here are a filtered, re-encoded subset of that
+dataset. Changes made: encounters ending in death or hospice transfer removed;
+one encounter kept per patient; 28 fields derived from the source columns; a
+25% held-out split. The transformation is in scripts/build_reference.py.
+
+
+THIRD-PARTY DEPENDENCIES
+------------------------
+
+This project builds and runs against the following, none of which are
+redistributed here:
+
+  numpy                BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0
+  pandas               BSD-3-Clause
+  scikit-learn         BSD-3-Clause
+  ucimlrepo            MIT
+  certifi              MPL-2.0
+  OpenFHE              BSD-2-Clause
+  niobium-client       Apache-2.0
+  niobium-fhetch       Apache-2.0
