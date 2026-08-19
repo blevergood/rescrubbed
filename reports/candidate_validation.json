@@ -1,0 +1,95 @@
+[
+  {
+    "label": "cheapest passing",
+    "steepness": 24,
+    "degree": 127,
+    "levels": 9,
+    "depth": 11,
+    "flips_heldout": 5,
+    "n_heldout": 17498,
+    "flips_cohort": 18,
+    "n_cohort": 69990,
+    "flips_adversarial": 921,
+    "n_adversarial": 200000,
+    "headroom_percentiles": {
+      "p0": 2.5545077647848302e-05,
+      "p1": 0.024918569010829117,
+      "p10": 0.23383736733731553,
+      "p50": 0.49641008411883547
+    },
+    "patients_at_risk_by_noise": {
+      "1e-09": 0,
+      "1e-07": 0,
+      "1e-05": 0,
+      "1e-04": 2,
+      "1e-03": 29
+    },
+    "observed_flips_by_noise": {
+      "1e-05": 0,
+      "1e-04": 0,
+      "1e-03": 7
+    }
+  },
+  {
+    "label": "zero flips",
+    "steepness": 24,
+    "degree": 159,
+    "levels": 10,
+    "depth": 12,
+    "flips_heldout": 0,
+    "n_heldout": 17498,
+    "flips_cohort": 1,
+    "n_cohort": 69990,
+    "flips_adversarial": 168,
+    "n_adversarial": 200000,
+    "headroom_percentiles": {
+      "p0": 7.38834493745344e-05,
+      "p1": 0.024981453083822203,
+      "p10": 0.234007941080526,
+      "p50": 0.4948829678959754
+    },
+    "patients_at_risk_by_noise": {
+      "1e-09": 0,
+      "1e-07": 0,
+      "1e-05": 0,
+      "1e-04": 1,
+      "1e-03": 30
+    },
+    "observed_flips_by_noise": {
+      "1e-05": 0,
+      "1e-04": 0,
+      "1e-03": 7
+    }
+  },
+  {
+    "label": "zero flips alt",
+    "steepness": 24,
+    "degree": 191,
+    "levels": 10,
+    "depth": 12,
+    "flips_heldout": 0,
+    "n_heldout": 17498,
+    "flips_cohort": 1,
+    "n_cohort": 69990,
+    "flips_adversarial": 31,
+    "n_adversarial": 200000,
+    "headroom_percentiles": {
+      "p0": 2.0770997593899665e-05,
+      "p1": 0.024927721377873125,
+      "p10": 0.23422513960590266,
+      "p50": 0.4948878682262574
+    },
+    "patients_at_risk_by_noise": {
+      "1e-09": 0,
+      "1e-07": 0,
+      "1e-05": 0,
+      "1e-04": 2,
+      "1e-03": 26
+    },
+    "observed_flips_by_noise": {
+      "1e-05": 0,
+      "1e-04": 0,
+      "1e-03": 8
+    }
+  }
+]
