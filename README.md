@@ -22,6 +22,10 @@ computes a risk band while the record stays encrypted, and returns it. Only the
 hospital can decrypt the answer, and the service never transmits its model. The
 arithmetic runs directly on ciphertext, using fully homomorphic encryption (FHE).
 
+Encrypted throughout, the model reaches 98.6% of the best cleartext AUC
+obtainable from these features, and 95.2% of the best result published on this
+benchmark.
+
 Across four run modes, including deployment on Niobium Fog hardware, all 17,498
 held-out patients received the same risk band as the unencrypted model. See
 [`reports/results.md`](reports/results.md).
