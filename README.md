@@ -148,6 +148,10 @@ make model    # re-run the design gate and export what the encrypted programs re
 | `model/circuit.txt` | Ring size, depth, moduli, field order, result-range check. No weights. | both the hospital and the vendor |
 | `model/model.txt` | Everything, including the weights | the vendor only |
 
+Every tracked file under `data/`, `model/` and `reports/` that a script produces
+regenerates byte-identically from a fixed seed. `make verify` checks that the
+committed copies still match the code; see [Contributing](#contributing).
+
 ### Building
 
 ```bash
@@ -353,6 +357,20 @@ would not decode safely:
 ```bash
 make model
 ```
+
+Then confirm the committed artifacts still match the code:
+
+```bash
+make data      # only needed once, to fetch the source dataset
+make verify
+```
+
+`make verify` regenerates every committed file that a script produces and fails
+if any differs from what is checked in. Those files back numbers quoted in
+`docs/` and `reports/`, so a design change that lands without a matching
+regeneration would leave the evidence describing the previous design. On failure
+it prints which files drifted and leaves them in the working tree, to commit or
+to discard with `git checkout`.
 
 ## License
 
