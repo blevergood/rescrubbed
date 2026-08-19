@@ -48,7 +48,7 @@ def main() -> int:
     home = pathlib.Path(a.home).resolve()
 
     log(f"encrypting patient data (shape: {a.mode})")
-    subprocess.run([str(BUILD / "readmit_encrypt"), str(home),
+    subprocess.run([str(BUILD / "rescrubbed_encrypt"), str(home),
                     str(ROOT / "data" / "test_records.csv"),
                     str(ROOT / "data" / "feature_bounds.csv"),
                     "--mode", a.mode, "--n", str(a.n),
@@ -71,7 +71,7 @@ def main() -> int:
         f"({time.time()-t0:.2f}s round trip)")
 
     log("decrypting locally")
-    out = subprocess.run([str(BUILD / "readmit_decrypt"), str(home)],
+    out = subprocess.run([str(BUILD / "rescrubbed_decrypt"), str(home)],
                          capture_output=True, text=True, check=True).stdout
     # Read by column NAME, not position: the deployed decrypt emits
     # index,band,band_name and only adds `value` under --raw, which a client

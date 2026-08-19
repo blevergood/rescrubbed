@@ -11,10 +11,10 @@
 // A bounds file that no program reads is not enforcement, so the check lives
 // here on the client path rather than in the server's circuit.
 //
-//   readmit_encrypt <home> <records.csv> <bounds.csv> [--mode batch|per_record]
+//   rescrubbed_encrypt <home> <records.csv> <bounds.csv> [--mode batch|per_record]
 //                   [--n <count>] [--offset <row>]
 
-#include "readmit.hpp"
+#include "rescrubbed.hpp"
 
 #include <chrono>
 #include <fstream>
@@ -83,11 +83,11 @@ int main(int argc, char* argv[]) try {
         return 1;
     }
     const fs::path home = argv[1], records_csv = argv[2], bounds_csv = argv[3];
-    readmit::Mode mode = readmit::Mode::Batch;
+    rescrubbed::Mode mode = rescrubbed::Mode::Batch;
     size_t want_n = 0, offset = 0;
     for (int i = 4; i < argc; ++i) {
         std::string a = argv[i];
-        if      (a == "--mode"   && i + 1 < argc) mode   = readmit::ParseMode(argv[++i]);
+        if      (a == "--mode"   && i + 1 < argc) mode   = rescrubbed::ParseMode(argv[++i]);
         else if (a == "--n"      && i + 1 < argc) want_n = std::stoul(argv[++i]);
         else if (a == "--offset" && i + 1 < argc) offset = std::stoul(argv[++i]);
         else { std::cerr << "Unknown arg: " << a << "\n"; return 1; }
@@ -95,13 +95,13 @@ int main(int argc, char* argv[]) try {
 
     // Public parameters only. Packing needs the field order and the slot
     // stride, not the weights.
-    const auto p = readmit::LoadPublicParams(home / readmit::files::kCircuit);
+    const auto p = rescrubbed::LoadPublicParams(home / rescrubbed::files::kCircuit);
 
-    auto cc = readmit::LoadContextWithEvalKeys(home);
-    auto pk = readmit::LoadPublicKey(home, cc);
+    auto cc = rescrubbed::LoadContextWithEvalKeys(home);
+    auto pk = rescrubbed::LoadPublicKey(home, cc);
     const size_t slots = cc->GetEncodingParams()->GetBatchSize();
 
-    const auto bounds = readmit::LoadBounds(bounds_csv);
+    const auto bounds = rescrubbed::LoadBounds(bounds_csv);
     if (static_cast<int>(bounds.names.size()) != p.n_features)
         throw std::runtime_error("bounds file declares " +
                                  std::to_string(bounds.names.size()) +
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) try {
                 + "'. Every field would be scored against the wrong weight.");
     }
 
-    const size_t cap = (mode == readmit::Mode::PerRecord) ? 1 : slots;
+    const size_t cap = (mode == rescrubbed::Mode::PerRecord) ? 1 : slots;
     if (want_n == 0) want_n = cap;
     if (want_n > cap)
         throw std::runtime_error("requested " + std::to_string(want_n) +
@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) try {
                 ++clipped_values;
                 any = true;
             }
-            X[i][size_t(j)] = readmit::ClipScale(raw, bounds.lo[size_t(j)],
+            X[i][size_t(j)] = rescrubbed::ClipScale(raw, bounds.lo[size_t(j)],
                                                  bounds.hi[size_t(j)]);
         }
         if (any) ++clipped_rows;
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) try {
     const auto t0 = std::chrono::steady_clock::now();
     size_t bytes = 0;
 
-    if (mode == readmit::Mode::Batch) {
+    if (mode == rescrubbed::Mode::Batch) {
         // Column-major: ciphertext j holds field j for every patient, one per
         // slot. The vendor's weight for that field then multiplies the whole
         // column at once, which is how 32,768 patients cost about what one does.
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) try {
             std::vector<double> col(n);
             for (size_t i = 0; i < n; ++i) col[i] = X[i][size_t(j)];
             auto ct = cc->Encrypt(pk, cc->MakeCKKSPackedPlaintext(col));
-            const auto out = home / readmit::InputFile(mode, j);
+            const auto out = home / rescrubbed::InputFile(mode, j);
             if (!Serial::SerializeToFile(out.string(), ct, SerType::BINARY))
                 throw std::runtime_error("failed to write " + out.string());
             bytes += fs::file_size(out);
@@ -172,19 +172,19 @@ int main(int argc, char* argv[]) try {
         std::vector<double> v(size_t(p.feature_slot_stride), 0.0);
         for (int j = 0; j < p.n_features; ++j) v[size_t(j)] = X[0][size_t(j)];
         auto ct = cc->Encrypt(pk, cc->MakeCKKSPackedPlaintext(v));
-        const auto out = home / readmit::InputFile(mode, 0);
+        const auto out = home / rescrubbed::InputFile(mode, 0);
         if (!Serial::SerializeToFile(out.string(), ct, SerType::BINARY))
             throw std::runtime_error("failed to write " + out.string());
         bytes += fs::file_size(out);
     }
 
-    readmit::SaveMeta(home, {mode, int(n)});
+    rescrubbed::SaveMeta(home, {mode, int(n)});
 
     const double secs = std::chrono::duration<double>(
         std::chrono::steady_clock::now() - t0).count();
-    std::cout << "[encrypt] mode=" << readmit::ModeName(mode)
+    std::cout << "[encrypt] mode=" << rescrubbed::ModeName(mode)
               << " patients=" << n
-              << " ciphertexts=" << (mode == readmit::Mode::Batch ? p.n_features : 1)
+              << " ciphertexts=" << (mode == rescrubbed::Mode::Batch ? p.n_features : 1)
               << " bytes=" << bytes
               << " (" << bytes / 1048576.0 << " MiB, " << secs << "s)\n";
     std::cout << "[encrypt] input box: " << clipped_values << " field value(s) across "

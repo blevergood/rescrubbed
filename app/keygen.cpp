@@ -7,13 +7,13 @@
 // evaluation keys) is what the vendor needs in order to compute on data it
 // cannot read.
 //
-//   readmit_keygen <home> [batch|per_record]
+//   rescrubbed_keygen <home> [batch|per_record]
 //
 // Rotation keys are only generated for per_record mode, which needs five of
 // them to fold one patient's fields together. Batch mode needs none, and they
 // are the largest single piece of key material, so it does not pay for them.
 
-#include "readmit.hpp"
+#include "rescrubbed.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -26,37 +26,37 @@ int main(int argc, char* argv[]) try {
         return 1;
     }
     const fs::path home = argv[1];
-    const readmit::Mode mode =
-        argc > 2 ? readmit::ParseMode(argv[2]) : readmit::Mode::Batch;
+    const rescrubbed::Mode mode =
+        argc > 2 ? rescrubbed::ParseMode(argv[2]) : rescrubbed::Mode::Batch;
 
     // Public parameters only. Generating keys needs the ring size, depth and
     // moduli, never the vendor's weights, so this reads circuit.txt, and the
     // loader refuses a file that turns out to contain the model.
-    const auto p = readmit::LoadPublicParams(home / readmit::files::kCircuit);
+    const auto p = rescrubbed::LoadPublicParams(home / rescrubbed::files::kCircuit);
 
     const auto t0 = std::chrono::steady_clock::now();
-    auto cc = readmit::BuildContext(p);
+    auto cc = rescrubbed::BuildContext(p);
     auto kp = cc->KeyGen();
     cc->EvalMultKeyGen(kp.secretKey);
 
     size_t n_rot = 0;
-    if (mode == readmit::Mode::PerRecord) {
-        const auto idx = readmit::RotationIndices(p.feature_slot_stride);
+    if (mode == rescrubbed::Mode::PerRecord) {
+        const auto idx = rescrubbed::RotationIndices(p.feature_slot_stride);
         cc->EvalRotateKeyGen(kp.secretKey, idx);
         n_rot = idx.size();
     }
 
-    readmit::SaveContextAndKeys(home, cc, kp);
+    rescrubbed::SaveContextAndKeys(home, cc, kp);
     const double secs = std::chrono::duration<double>(
         std::chrono::steady_clock::now() - t0).count();
 
-    std::cout << "[keygen] mode=" << readmit::ModeName(mode)
+    std::cout << "[keygen] mode=" << rescrubbed::ModeName(mode)
               << " ring=" << cc->GetRingDimension()
               << " slots=" << cc->GetEncodingParams()->GetBatchSize()
               << " depth=" << p.mult_depth
               << " rotation_keys=" << n_rot
               << " (" << secs << "s)\n";
-    std::cout << "[keygen] secret key written to " << (home / readmit::files::kSecretKey).string()
+    std::cout << "[keygen] secret key written to " << (home / rescrubbed::files::kSecretKey).string()
               << ", which must never leave this host\n";
     return 0;
 } catch (const std::exception& e) {

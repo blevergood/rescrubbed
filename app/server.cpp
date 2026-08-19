@@ -15,9 +15,9 @@
 //   --sim-full  as --sim but with real maths recorded, adding a bit-level check
 //   (no flag)   record and dispatch to the Niobium Fog
 //
-//   readmit_server <home> [--cpu|--sim] [--hollow] [--no-ring-dim-check]
+//   rescrubbed_server <home> [--cpu|--sim] [--hollow] [--no-ring-dim-check]
 
-#include "readmit.hpp"
+#include "rescrubbed.hpp"
 
 #ifdef NIOBIUM_COMPILER
 #include <niobium/compiler.h>
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) try {
     // compacts them out of argv.
     niobium::compiler().init(argc, argv);
     niobium::compiler().set_program_info(
-        "readmit_server", "1.0",
+        "rescrubbed_server", "1.0",
         "30-day hospital readmission risk banding on encrypted patient records");
     niobium::compiler().set_build_info(__FILE__, __LINE__, __TIMESTAMP__);
 
@@ -68,25 +68,25 @@ int main(int argc, char* argv[]) try {
     // ── the trust boundary, enforced ──────────────────────────────────────
     // A reviewer can test this: drop a secret key into the server home and
     // confirm the process aborts rather than starting.
-    if (fs::exists(home / readmit::files::kSecretKey)) {
+    if (fs::exists(home / rescrubbed::files::kSecretKey)) {
         std::cerr << "[server] FATAL: a secret key is present in the server home ("
-                  << (home / readmit::files::kSecretKey).string() << ").\n"
+                  << (home / rescrubbed::files::kSecretKey).string() << ").\n"
                   << "[server] This process must never be able to decrypt. Refusing to start.\n";
         return 2;
     }
 
-    const auto model = readmit::LoadModel(home / readmit::files::kModel);
-    const auto meta  = readmit::LoadMeta(home);
+    const auto model = rescrubbed::LoadModel(home / rescrubbed::files::kModel);
+    const auto meta  = rescrubbed::LoadMeta(home);
 
-    auto cc = readmit::LoadContextWithEvalKeys(home);
+    auto cc = rescrubbed::LoadContextWithEvalKeys(home);
     const size_t slots = cc->GetEncodingParams()->GetBatchSize();
 
     // ── load the encrypted request ────────────────────────────────────────
     std::vector<Ciphertext<DCRTPoly>> in;
-    const int n_ct = (meta.mode == readmit::Mode::Batch) ? model.n_features : 1;
+    const int n_ct = (meta.mode == rescrubbed::Mode::Batch) ? model.n_features : 1;
     size_t in_bytes = 0;
     for (int j = 0; j < n_ct; ++j) {
-        const auto path = home / readmit::InputFile(meta.mode, j);
+        const auto path = home / rescrubbed::InputFile(meta.mode, j);
         Ciphertext<DCRTPoly> ct;
         if (!Serial::DeserializeFromFile(path.string(), ct, SerType::BINARY))
             throw std::runtime_error("cannot load " + path.string());
@@ -95,25 +95,25 @@ int main(int argc, char* argv[]) try {
     }
     std::cout << "[server] received " << in_bytes << " bytes of ciphertext ("
               << in_bytes / 1048576.0 << " MiB, " << n_ct << " ciphertext(s), mode="
-              << readmit::ModeName(meta.mode) << ", " << meta.n_records
+              << rescrubbed::ModeName(meta.mode) << ", " << meta.n_records
               << " patient(s)), contents unreadable to this process\n";
 
     // Every plaintext operand the circuit multiplies by is built HERE, before
     // any recording starts. One built inside the recording bracket would be read
     // as uninitialised on replay.
-    auto pt = readmit::MakePlaintexts(cc, model, meta.mode, slots);
+    auto pt = rescrubbed::MakePlaintexts(cc, model, meta.mode, slots);
 
     Ciphertext<DCRTPoly> result;
     const auto t0 = std::chrono::steady_clock::now();
 
     if (cpu_only) {
         // Plain local computation, no recorder.
-        result = readmit::run_circuit(cc, model, meta.mode, in, pt);
+        result = rescrubbed::run_circuit(cc, model, meta.mode, in, pt);
     } else {
         // Recorded path: --sim replays locally, the default dispatches to the Fog.
         niobium::Compiler::CacheParameters cache = {
-            {"workload", "readmit"},
-            {"mode", readmit::ModeName(meta.mode)},
+            {"workload", "rescrubbed"},
+            {"mode", rescrubbed::ModeName(meta.mode)},
             {"degree", std::to_string(model.degree)},
             {"features", std::to_string(model.n_features)},
         };
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) try {
         niobium::compiler().capture_crypto_context(cc);
         for (int j = 0; j < n_ct; ++j)
             niobium::compiler().tag_input("x" + std::to_string(j), in[j]);
-        if (meta.mode == readmit::Mode::Batch) {
+        if (meta.mode == rescrubbed::Mode::Batch) {
             for (int j = 0; j < model.n_features; ++j)
                 niobium::compiler().tag_input("w" + std::to_string(j), pt.weight_cols[size_t(j)]);
         } else {
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) try {
         if (!niobium::compiler().is_cache_valid()) {
             niobium::compiler().enable_hollow_mode(hollow);
             niobium::compiler().start();
-            result = readmit::run_circuit(cc, model, meta.mode, in, pt);   // THE SHARED CIRCUIT
+            result = rescrubbed::run_circuit(cc, model, meta.mode, in, pt);   // THE SHARED CIRCUIT
             niobium::compiler().probe("band", result);
             niobium::compiler().stop();
             niobium::compiler().enable_hollow_mode(false);
@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) try {
         if (!hollow && !cpu_baseline) {
             std::cout << "[server] ring-level identity check SKIPPED: the trace "
                          "was cached, so this run computed no local baseline. "
-                         "Clear readmit_server_workload_* to force it.\n";
+                         "Clear rescrubbed_server_workload_* to force it.\n";
         }
         if (!hollow && cpu_baseline) {
             const auto& a = result->GetElements();
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) try {
     const double secs = std::chrono::duration<double>(
         std::chrono::steady_clock::now() - t0).count();
 
-    const auto out = home / readmit::files::kResult;
+    const auto out = home / rescrubbed::files::kResult;
     if (!Serial::SerializeToFile(out.string(), result, SerType::BINARY))
         throw std::runtime_error("failed to write " + out.string());
     const auto out_bytes = fs::file_size(out);

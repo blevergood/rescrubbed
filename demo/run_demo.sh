@@ -28,7 +28,7 @@ echo "==========================================================================
 # ── the hospital generates every key, on its own host ────────────────────────
 # It receives circuit.txt (public parameters) and never model.txt (the weights).
 cp "$ROOT/model/circuit.txt" "$CLIENT/"
-"$ROOT/build/readmit_keygen" "$CLIENT" "$APP_MODE"
+"$ROOT/build/rescrubbed_keygen" "$CLIENT" "$APP_MODE"
 
 # ── provision the vendor's host: no secret key, no patient data ──────────────
 cp "$CLIENT/cc.bin" "$CLIENT/pk.bin" "$CLIENT/mk.bin" "$CLIENT/rk.bin" "$SERVER/"

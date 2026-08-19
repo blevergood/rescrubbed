@@ -77,7 +77,7 @@ else
   NREC="${NREC:-$(( $(wc -l < "$ROOT/data/test_records.csv") - 1 ))}"
 fi
 
-rm -rf "$RUN" "$ROOT"/readmit_server_workload_* "$ROOT"/nbcc_fhetch_replay_source_*
+rm -rf "$RUN" "$ROOT"/rescrubbed_server_workload_* "$ROOT"/nbcc_fhetch_replay_source_*
 mkdir -p "$CLIENT" "$SERVER"
 
 echo "=============================================================================="
@@ -90,7 +90,7 @@ echo "==========================================================================
 # need for the vendor's weights, and the loader refuses that file if handed it.
 cp "$ROOT/model/circuit.txt" "$CLIENT/"
 T0=$(date +%s.%N)
-"$BUILD/readmit_keygen" "$CLIENT" "$APP_MODE"
+"$BUILD/rescrubbed_keygen" "$CLIENT" "$APP_MODE"
 T_KEYGEN=$($PY -c "print(f'{$(date +%s.%N)-$T0:.2f}')")
 
 # ── 2. provision the server home: context, public + eval keys, model.
@@ -107,7 +107,7 @@ cp "$ROOT/model/model.txt" "$ROOT/model/circuit.txt" "$SERVER/"
 cp "$CLIENT/sk.bin" "$SERVER/sk.bin"
 printf 'mode %s\nn_records 1\n' "$APP_MODE" > "$SERVER/meta.txt"
 set +e
-NEG_OUT=$("$BUILD/readmit_server" "$SERVER" $FLAG $RINGCHK 2>&1); NEG_RC=$?
+NEG_OUT=$("$BUILD/rescrubbed_server" "$SERVER" $FLAG $RINGCHK 2>&1); NEG_RC=$?
 set -e
 rm -f "$SERVER/sk.bin"
 if [ "$NEG_RC" -ne 2 ]; then
@@ -137,7 +137,7 @@ fi
 
 # ── 5. encrypt -> server -> decrypt ──────────────────────────────────────────
 T0=$(date +%s.%N)
-"$BUILD/readmit_encrypt" "$CLIENT" "$ROOT/data/test_records.csv" \
+"$BUILD/rescrubbed_encrypt" "$CLIENT" "$ROOT/data/test_records.csv" \
     "$ROOT/data/feature_bounds.csv" --mode "$APP_MODE" --n "$NREC" --offset "$RECORD"
 T_ENC=$($PY -c "print(f'{$(date +%s.%N)-$T0:.2f}')")
 
@@ -147,11 +147,11 @@ cp "$CLIENT/meta.txt" "$SERVER/"
 T0=$(date +%s.%N)
 if [ "$MODE" = "fog" ]; then
   # The ring-dimension guard is never bypassed on a Fog dispatch.
-  fog submit "$BUILD/readmit_server" "$SERVER" $HOLLOW_FLAG --target="$FOG_TARGET"
+  fog submit "$BUILD/rescrubbed_server" "$SERVER" $HOLLOW_FLAG --target="$FOG_TARGET"
   PEAK_RSS="n/a (ran on the Fog)"
 else
   $PY "$ROOT/scripts/run_with_rss.py" "$RUN/rss.txt" \
-      "$BUILD/readmit_server" "$SERVER" $FLAG $HOLLOW_FLAG $RINGCHK
+      "$BUILD/rescrubbed_server" "$SERVER" $FLAG $HOLLOW_FLAG $RINGCHK
   PEAK_RSS=$(cat "$RUN/rss.txt")
 fi
 T_SRV=$($PY -c "print(f'{$(date +%s.%N)-$T0:.2f}')")
@@ -161,7 +161,7 @@ T0=$(date +%s.%N)
 # --raw is for THIS harness only: the fidelity comparison needs the pre-rounding
 # value to measure encryption error. A deployed client never passes it, because
 # that value is invertible back to the risk score.
-"$BUILD/readmit_decrypt" "$CLIENT" --raw > "$RUN/decrypted.csv"
+"$BUILD/rescrubbed_decrypt" "$CLIENT" --raw > "$RUN/decrypted.csv"
 T_DEC=$($PY -c "print(f'{$(date +%s.%N)-$T0:.2f}')")
 
 # ── 6. report ────────────────────────────────────────────────────────────────

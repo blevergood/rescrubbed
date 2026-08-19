@@ -268,7 +268,7 @@ which can fall outside the polynomial's fitted interval and cause the whole
 result to fail decryption. A partial sum here ranges over a subset of the same
 weighted terms as the full sum, so it is bounded by the full sum's range and
 lands inside the same interval. Confirming that saved a multiplication step in
-the single-patient path. The argument is written out in `app/readmit.hpp`.
+the single-patient path. The argument is written out in `app/rescrubbed.hpp`.
 
 **Both request shapes land at the same depth**, so one set of parameters and one
 context serve both.

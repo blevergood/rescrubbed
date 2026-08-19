@@ -60,7 +60,7 @@ verify:
 # slash so it matches directories only and cannot delete run_test.sh.
 clean:
 	rm -rf build/ run_*/ client_home/ server_home/
-	rm -rf readmit_server_workload_*/ nbcc_fhetch_replay_source_*/ fhetch_driver_source_*/
+	rm -rf rescrubbed_server_workload_*/ nbcc_fhetch_replay_source_*/ fhetch_driver_source_*/
 	rm -rf demo/client_home/ demo/server_home/
 	find . -name __pycache__ -type d -prune -exec rm -rf {} +
 	@echo "clean: build tree and run artifacts removed; data/ and model/ kept"

@@ -22,7 +22,7 @@ import sys
 import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-BIN = ROOT / "build" / "readmit_server"
+BIN = ROOT / "build" / "rescrubbed_server"
 
 
 def log(msg: str) -> None:

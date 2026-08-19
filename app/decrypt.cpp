@@ -16,11 +16,11 @@
 // Validation against the twin lives in run_test.sh, not here, so the deployed
 // binary carries no test-only inputs.
 //
-//   readmit_decrypt <home> [result.bin] [--raw]
+//   rescrubbed_decrypt <home> [result.bin] [--raw]
 //
 // Prints CSV to stdout: index,band,band_name  (plus `value` under --raw)
 
-#include "readmit.hpp"
+#include "rescrubbed.hpp"
 
 #include <cmath>
 #include <iomanip>
@@ -48,12 +48,12 @@ int main(int argc, char* argv[]) try {
     }
     const fs::path home = home_s;
     const fs::path result_path =
-        result_s.empty() ? home / readmit::files::kResult : fs::path(result_s);
+        result_s.empty() ? home / rescrubbed::files::kResult : fs::path(result_s);
 
-    const auto params = readmit::LoadPublicParams(home / readmit::files::kCircuit);
-    auto cc = readmit::LoadContextWithEvalKeys(home);
-    auto sk = readmit::LoadSecretKey(home, cc);
-    const auto meta = readmit::LoadMeta(home);
+    const auto params = rescrubbed::LoadPublicParams(home / rescrubbed::files::kCircuit);
+    auto cc = rescrubbed::LoadContextWithEvalKeys(home);
+    auto sk = rescrubbed::LoadSecretKey(home, cc);
+    const auto meta = rescrubbed::LoadMeta(home);
 
     Ciphertext<DCRTPoly> ct;
     if (!Serial::DeserializeFromFile(result_path.string(), ct, SerType::BINARY))
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) try {
 
     // In batch mode each patient occupies one slot; in per-record mode the
     // rotate-and-sum leaves the answer in slot 0.
-    const int n = (meta.mode == readmit::Mode::Batch) ? meta.n_records : 1;
+    const int n = (meta.mode == rescrubbed::Mode::Batch) ? meta.n_records : 1;
     pt->SetLength(size_t(n));
     const auto& v = pt->GetRealPackedValue();
 
