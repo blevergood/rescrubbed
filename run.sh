@@ -7,7 +7,12 @@
 set -euo pipefail
 
 MODE_DEFAULT=local
-NIOBIUM_CLIENT_DIR="${NIOBIUM_CLIENT_DIR:-/Users/brad/Documents/Repositories/niobium-client-fog-starter-kit/niobium-client}"
+# Anchored to this script rather than $PWD, so invoking it by absolute path from
+# another directory still resolves. Defaults to a checkout inside the repository,
+# which is where `git submodule update --init` puts it; export the variable to
+# point at one kept elsewhere.
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NIOBIUM_CLIENT_DIR="${NIOBIUM_CLIENT_DIR:-$ROOT_DIR/niobium-client}"
 
 usage() {
     cat <<EOF
@@ -48,9 +53,9 @@ if [ "$HELP" = 1 ] || [ $# -eq 0 ]; then usage "$MODE"; exit 0; fi
 
 if [ "$MODE" = local ]; then
     [ -d "$NIOBIUM_CLIENT_DIR" ] || {
-        echo "Local mode needs NIOBIUM_CLIENT_DIR pointing at a built niobium-client." >&2
-        echo "  currently: $NIOBIUM_CLIENT_DIR" >&2
-        echo "Build one per environment-setup.md Path B, or use --container." >&2
+        echo "Local mode needs a built niobium-client. Looked in:" >&2
+        echo "  $NIOBIUM_CLIENT_DIR" >&2
+        echo "See the Install section of README.md, or use --container." >&2
         exit 1; }
     export NIOBIUM_CLIENT_DIR
     export PATH="$HOME/.local/bin:$PATH"      # fog + nbcc_fhetch_replay live here

@@ -28,7 +28,6 @@ held-out patients received the same risk band as the unencrypted model. See
 
 ## Table of Contents
 
-- [Security](#security)
 - [Background](#background)
 - [Install](#install)
   - [Build environment](#build-environment)
@@ -44,42 +43,12 @@ held-out patients received the same risk band as the unencrypted model. See
   - [Output: one risk band per patient](#output-one-risk-band-per-patient)
   - [Data at the trust boundary](#data-at-the-trust-boundary)
 - [Results](#results)
+- [Security](#security)
 - [Repository layout](#repository-layout)
 - [Further reading](#further-reading)
 - [Maintainers](#maintainers)
 - [Contributing](#contributing)
 - [License](#license)
-
-## Security
-
-| | Holds | Never sees |
-|---|---|---|
-| **Hospital** (client) | Patient records; the only decryption key | The vendor's model |
-| **Scoring vendor** (server) | The trained model; evaluation keys | Any patient record, score, or band |
-
-Both boundaries are enforced by the software:
-
-- The vendor's home directory is provisioned without a decryption key. The server
-  process exits with status 2 if a secret-key file is present when it starts.
-- The hospital receives `model/circuit.txt`, which carries ring size, depth,
-  moduli and field order. The client-side loader raises an error naming the
-  offending field if it is given a file containing weights, a bias, or the band
-  thresholds.
-
-**The service returns a band.** Returning the exact risk score would let a
-hospital submit 29 fabricated patients, read back 29 scores, and solve 29 linear
-equations for all 28 weights and the bias. A band carries roughly 1.6 bits per
-query.
-
-Banding does not close the channel. Varying one field while holding the rest
-fixed and searching for the value at which the band flips locates a point on a
-band boundary; enough such points recover the ratios between weights. Published
-estimates for that approach run to 10²–10⁴ queries. A deployment therefore needs
-query rate limiting, per-customer budgets, and audit logging.
-
-Assumed adversary: honest-but-curious. For the full message flow, what each party
-can learn, and the list of threats this design does not address, see
-[`docs/protocol-and-threat-model.md`](docs/protocol-and-threat-model.md).
 
 ## Background
 
@@ -102,21 +71,68 @@ score](https://jamanetwork.com/journals/jamainternalmedicine/fullarticle/1672282
 
 ### Build environment
 
-This application was set up against a local niobium-client build, so `run.sh`
-defaults to running on the host. It expects:
+The encrypted programs link against niobium-client, which supplies the
+instrumented OpenFHE. Provide it in one of two ways.
+
+**Build it locally.** This is what `run.sh` defaults to. Needs a C++17 compiler,
+CMake 3.16 or later, OpenSSL 3 and Python 3. The build compiles OpenFHE from
+source and takes roughly an hour.
+
+Prerequisites:
 
 ```bash
-export NIOBIUM_CLIENT_DIR=/path/to/niobium-client   # built with `make install-release`
+# macOS. Apple ships LibreSSL, so point CMake at Homebrew's OpenSSL.
+xcode-select --install
+brew install cmake openssl@3 python3
+export OPENSSL_ROOT_DIR="$(brew --prefix openssl@3)"
+
+# Debian or Ubuntu:
+# sudo apt-get install -y build-essential cmake libssl-dev python3 git
 ```
 
-The default is set in `run.sh`; override per call with `--local` or
-`--container`. `--container` runs the same commands inside the FHE-dev image with
-this folder mounted, which needs only Docker:
+Get the source, either as a submodule of this repository, which pins the version
+the application was validated against:
+
+```bash
+git submodule add https://github.com/NiobiumInc/niobium-client.git niobium-client
+cd niobium-client
+```
+
+or as a clone kept **outside** this repository, shared across projects:
+
+```bash
+git clone https://github.com/NiobiumInc/niobium-client.git ~/niobium-client
+cd ~/niobium-client
+```
+
+Then build it, the same either way:
+
+```bash
+make sync-fhetch      # fetch niobium-fhetch and its nested OpenFHE
+make release          # build the instrumented OpenFHE and libnbfhetch
+make install-release  # install them under vendor/lib, where find_package looks
+make install-cli      # put fog and nbcc_fhetch_replay in ~/.local/bin
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Skipping `make install-release` leaves the build unable to locate the SDK.
+
+`run.sh` looks for the checkout at `./niobium-client`. If you kept it elsewhere,
+point at it and add the export to your shell profile:
+
+```bash
+export NIOBIUM_CLIENT_DIR=~/niobium-client
+```
+
+**Or use the container.** Needs only Docker, and compiles nothing locally.
 
 ```bash
 docker pull ghcr.io/niobiuminc/fhe-dev:latest
 ./run.sh --container "./run_test.sh --cpu"
 ```
+
+`run.sh` takes `--local` or `--container` per call, so a machine with both can
+run either.
 
 The analysis scripts need a Python environment:
 
@@ -318,6 +334,37 @@ Background readmission rate: 9.1%.
 
 Full analysis, including a head-to-head against the LACE index computed on the
 same patients, is in [`reports/results.md`](reports/results.md).
+
+## Security
+
+| | Holds | Never sees |
+|---|---|---|
+| **Hospital** (client) | Patient records; the only decryption key | The vendor's model |
+| **Scoring vendor** (server) | The trained model; evaluation keys | Any patient record, score, or band |
+
+Both boundaries are enforced by the software:
+
+- The vendor's home directory is provisioned without a decryption key. The server
+  process exits with status 2 if a secret-key file is present when it starts.
+- The hospital receives `model/circuit.txt`, which carries ring size, depth,
+  moduli and field order. The client-side loader raises an error naming the
+  offending field if it is given a file containing weights, a bias, or the band
+  thresholds.
+
+**The service returns a band.** Returning the exact risk score would let a
+hospital submit 29 fabricated patients, read back 29 scores, and solve 29 linear
+equations for all 28 weights and the bias. A band carries roughly 1.6 bits per
+query.
+
+Banding does not close the channel. Varying one field while holding the rest
+fixed and searching for the value at which the band flips locates a point on a
+band boundary; enough such points recover the ratios between weights. Published
+estimates for that approach run to 10²–10⁴ queries. A deployment therefore needs
+query rate limiting, per-customer budgets, and audit logging.
+
+Assumed adversary: honest-but-curious. For the full message flow, what each party
+can learn, and the list of threats this design does not address, see
+[`docs/protocol-and-threat-model.md`](docs/protocol-and-threat-model.md).
 
 ## Repository layout
 
