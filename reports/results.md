@@ -41,7 +41,7 @@ scored, and returned. Only then were they decrypted and compared.
 | Budget it had to stay under | 1 × 10⁻⁴ |
 | Patients banded differently from the unencrypted model, end to end | **0 of 25,010** |
 
-The measured difference is about 250× smaller than the budget. That budget was
+The measured difference is about 230× smaller than the budget. That budget was
 fixed before the encrypted build, by measuring how close each patient sits to a
 band boundary and how much drift the closest one could absorb.
 
@@ -83,7 +83,7 @@ says nothing about whether the model predicts well.
 
 On this dataset the best published result separates readmitted from
 non-readmitted patients with a ranking quality of about 0.667. Ours reaches
-0.651. Roughly 15% of the patients we flag as high-risk are readmitted, against a
+0.651. Roughly 21% of the patients we flag as high-risk are readmitted, against an
 11.6% background rate.
 
 What changed is that the hospital never handed over a patient record and the
@@ -141,9 +141,8 @@ Three qualifications on that comparison:
 - **HOSPITAL (published 0.71) was not tested.** It requires haemoglobin and
   sodium at discharge, which this dataset does not contain.
 
-The directly comparable benchmarks are the published results on this dataset:
-logistic regression around 0.642 and gradient boosting around 0.667. Ours sits at
-0.651, above the published linear model.
+The directly comparable benchmark is the best published result on this dataset,
+a gradient-boosting model at around 0.667. Ours sits at 0.651.
 
 ### Stating that as a proportion
 
@@ -156,7 +155,6 @@ to do with the model: on that arithmetic a model with no skill at all would scor
 |---|---|---|---|
 | Ours | 0.6508 | 0.1508 | |
 | Ceiling on these features | 0.6590 | 0.1590 | **94.8%** |
-| Published logistic regression | 0.6420 | 0.1420 | **106.2%** |
 | Best published (XGBoost) | 0.6670 | 0.1670 | **90.3%** |
 
 The figures quoted in the README are the third column.

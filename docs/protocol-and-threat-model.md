@@ -202,7 +202,7 @@ the design carries no transciphering layer or signature scheme.
 
 8. **The quality of the model itself.** This design reproduces the reference
    model. That model reaches a ranking quality of 0.651 against a 0.659 ceiling
-   measured on the same features; roughly 15% of the patients it flags as
+   measured on the same features; roughly 21% of the patients it flags as
    high-risk are readmitted, against an 11.6% background rate. See
    [`../reports/results.md`](../reports/results.md).
 

@@ -109,11 +109,11 @@ model memorising a person.
 
 99,343 encounters across 69,990 patients remain, 11.6% readmitted within 30 days.
 
-**Model form.** Regularised logistic regression. On this dataset published
-gradient boosting reaches around 0.667 ranking quality and published logistic
-regression around 0.642; a gradient-boosting model fitted on our feature set
-reaches 0.659 against our linear model's 0.651. A tree ensemble is all
-comparisons and branching, which is hostile to encrypted computation.
+**Model form.** Regularised logistic regression. A gradient-boosting model
+fitted on the same features reaches 0.659 against this model's 0.651, and the
+best result published on this dataset is around 0.667. A tree ensemble is all
+comparisons and branching, which is hostile to encrypted computation, and 0.008
+of ranking quality does not buy that.
 
 Its second property is validation: scikit-learn's implementation is a
 permissively-licensed external oracle, so the twin is checked against something
