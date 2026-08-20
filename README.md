@@ -22,11 +22,11 @@ computes a risk band while the record stays encrypted, and returns it. Only the
 hospital can decrypt the answer, and the service never transmits its model. The
 arithmetic runs directly on ciphertext, using fully homomorphic encryption (FHE).
 
-Encrypted throughout, the model reaches 98.6% of the best cleartext AUC
-obtainable from these features, and 95.2% of the best result published on this
+Encrypted throughout, the model reaches 98.8% of the best cleartext AUC
+obtainable from these features, and 97.6% of the best result published on this
 benchmark.
 
-Across four run modes, including deployment on Niobium Fog hardware, all 17,498
+Across four run modes, including deployment on Niobium Fog hardware, all 25,010
 held-out patients received the same risk band as the unencrypted model. See
 [`reports/results.md`](reports/results.md).
 
@@ -63,8 +63,11 @@ requires the hospital to send the record, or the vendor to ship the model.
 **Data.** [UCI *Diabetes 130-US Hospitals for Years
 1999–2008*](https://archive.ics.uci.edu/dataset/296/diabetes+130+us+hospitals+for+years+1999+2008),
 101,766 de-identified encounters from 130 US hospitals. Cohort selection drops
-encounters ending in death or hospice transfer, and keeps only each patient's
-first encounter, leaving 69,990 patients with a 9.1% readmission rate.
+encounters ending in death or hospice transfer, since those patients cannot be
+readmitted, leaving 99,343 encounters across 69,990 patients with an 11.6%
+readmission rate. Repeat admissions are kept, because the deployed system
+scores discharges. The train and test halves are split by patient, so nobody
+appears on both sides.
 
 **Model.** Regularised logistic regression over 28 fields, spanning the
 constructs used by the established bedside scores, the [LACE
@@ -191,22 +194,22 @@ and the resource profile, in that order.
 ./run.sh "./run_test.sh --cpu"
 ```
 
-Expected output, scoring the whole 17,498-patient census:
+Expected output, scoring the whole 25,010-patient census:
 
 ```
 negative test: server refused a planted secret key (exit 2, guard message)  [OK]
-[encrypt] mode=batch patients=17498 ciphertexts=28 bytes=381765076 (364.08 MiB)
-[encrypt] input box: 450 field value(s) across 445 patient(s) saturated at a
+[encrypt] mode=batch patients=25010 ciphertexts=28 bytes=381765076 (364.08 MiB)
+[encrypt] input box: 470 field value(s) across 455 patient(s) saturated at a
           published bound; 0 patients rejected
 [server]  received 381765076 bytes of ciphertext, contents unreadable to this process
 [server]  returned 4196209 bytes, still encrypted
 
   band        patients    share   actually readmitted
-  low           10,527   60.2%                 6.2%
-  moderate       4,405   25.2%                12.3%
-  high           2,566   14.7%                15.4%
+  low           14,962   59.8%                 7.8%
+  moderate       6,224   24.9%                14.8%
+  high           3,824   15.3%                21.2%
 
-  patients whose band changed : 0 of 17,498
+  patients whose band changed : 0 of 25,010
   largest numeric difference  : 3.184e-07   (budget 1e-04)
 
  PASS: encryption preserved every band
@@ -287,10 +290,10 @@ rejected.
 | `time_in_hospital` | Length of the stay | days | 1–14 |
 | `num_lab_procedures` | Lab tests during the stay | count | 0–100 |
 | `num_procedures` | Non-lab procedures | count | 0–6 |
-| `num_medications` | Distinct medications given | count | 0–40 |
-| `number_outpatient` | Outpatient visits in the prior year | count | 0–5 |
-| `number_emergency` | Emergency visits in the prior year | count | 0–3 |
-| `number_inpatient` | Inpatient admissions in the prior year | count | 0–5 |
+| `num_medications` | Distinct medications given | count | 0–45 |
+| `number_outpatient` | Outpatient visits in the prior year | count | 0–8 |
+| `number_emergency` | Emergency visits in the prior year | count | 0–5 |
+| `number_inpatient` | Inpatient admissions in the prior year | count | 0–8 |
 | `number_diagnoses` | Diagnoses recorded | count | 1–9 |
 | `age_years` | Age, at the midpoint of the recorded band | years | 5–95 |
 | `gender_female` | Female | 0/1 | |
@@ -313,11 +316,11 @@ appear here are not used by the model.
 
 | Value | Band | Share of patients | Actually readmitted |
 |---|---|---|---|
-| 0 | low | 60.2% | 6.2% |
-| 1 | moderate | 25.2% | 12.3% |
-| 2 | high | 14.7% | 15.4% |
+| 0 | low | 59.8% | 7.8% |
+| 1 | moderate | 24.9% | 14.8% |
+| 2 | high | 15.3% | 21.2% |
 
-Background readmission rate: 9.1%.
+Background readmission rate: 11.6%.
 
 ### Data at the trust boundary
 
@@ -331,10 +334,10 @@ Background readmission rate: 9.1%.
 
 | Source | Size | Attributed to |
 |---|---|---|
-| Reference vs ground truth | AUC 0.6352, against a 0.6440 ceiling measured on the same features | The model |
-| Twin vs reference | 0 band differences | The polynomial standing in for the sharp cutoff. Worst deviation 1.57 × 10⁻⁴, against the 0.5 needed to move a patient |
+| Reference vs ground truth | AUC 0.6508, against a 0.6590 ceiling measured on the same features | The model |
+| Twin vs reference | 0 band differences | The polynomial standing in for the sharp cutoff. Worst deviation 3.04 × 10⁻⁴, against the 0.5 needed to move a patient |
 | Fixed-point quantisation | ~10⁻¹⁴ | Rounding onto the encryption scheme's grid |
-| FHE vs twin | 0 band differences | Encryption noise. Max 3.9 × 10⁻⁷, against a 1 × 10⁻⁴ budget |
+| FHE vs twin | 0 band differences | Encryption noise. Max 4.4 × 10⁻⁷, against a 1 × 10⁻⁴ budget |
 
 Full analysis, including a head-to-head against the LACE index computed on the
 same patients, is in [`reports/results.md`](reports/results.md).

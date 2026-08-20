@@ -7,11 +7,19 @@ threshold comparisons.
 
 Pipeline
 --------
-1.  Cohort selection (standard for this dataset, per Strack et al. 2014):
-      - drop encounters ending in death or hospice transfer (the patient cannot
-        be readmitted, so keeping them teaches the model the wrong lesson)
-      - keep only each patient's FIRST encounter, so no patient appears in both
-        the training and test splits
+1.  Cohort selection:
+      - drop encounters ending in death or hospice transfer. Those patients
+        cannot be readmitted, so their answer is knowable with certainty from
+        the discharge record and the model would learn a trivial rule. Medicare's
+        own readmission measures exclude them for the same reason.
+      - keep EVERY remaining encounter, including repeat admissions. The
+        deployed system scores discharges, not patients, so a frequent admitter
+        should carry the weight of each of their discharges. Repeat visits are
+        also where the signal lives.
+
+    The train/test split is by patient (GroupShuffleSplit on patient_nbr), so no
+    individual appears on both sides. That, rather than discarding their repeat
+    visits, is what keeps the model from memorising a person.
 2.  Feature construction into a fixed, bounded [0,1] box (see FEATURES below).
     Every feature is clipped to a published clinical range and min-max mapped.
     The clipping bounds the score the encrypted stage evaluates.
@@ -66,6 +74,21 @@ RANDOM_STATE = 20260811
 # predictable for the wrong reason.
 DEAD_OR_HOSPICE = {11, 13, 14, 19, 20, 21}
 
+
+def cohort(df: pd.DataFrame) -> pd.DataFrame:
+    """The encounters the model is built and evaluated on.
+
+    Every script that needs the cohort imports this one function, so the
+    reference model, the candidate validation and the LACE comparison cannot
+    drift apart on which patients they count.
+
+    Repeat admissions are kept. The deployed system scores discharges, so a
+    frequent admitter carries the weight of each of theirs. Leakage between the
+    train and test halves is handled by splitting on patient_nbr, not by
+    discarding rows.
+    """
+    return df[~df["discharge_disposition_id"].isin(DEAD_OR_HOSPICE)]
+
 # ICD-9 primary-diagnosis groupings, the conventional 9 buckets used in the
 # published work on this dataset.
 def diag_group(code) -> str:
@@ -103,16 +126,19 @@ AGE_MID = {
 }
 
 # (name, lo, hi): the published input box. Every feature is clipped here and
-# mapped to [0,1]. Continuous bounds are set at a high percentile so the clip
-# saturates genuine outliers rather than reshaping the bulk of the distribution.
+# mapped to [0,1]. Each continuous bound sits at or just above the 99th
+# percentile of the cohort, so the clip saturates genuine outliers rather than
+# reshaping the distribution. The prior-utilisation bounds matter most: they
+# are what a frequent admitter is scored on, and a bound below the 99th
+# percentile would flatten exactly the patients the model most needs to rank.
 FEATURES: list[tuple[str, float, float]] = [
     ("time_in_hospital",       1,  14),
     ("num_lab_procedures",     0, 100),
     ("num_procedures",         0,   6),
-    ("num_medications",        0,  40),
-    ("number_outpatient",      0,   5),
-    ("number_emergency",       0,   3),
-    ("number_inpatient",       0,   5),
+    ("num_medications",        0,  45),
+    ("number_outpatient",      0,   8),
+    ("number_emergency",       0,   5),
+    ("number_inpatient",       0,   8),
     ("number_diagnoses",       1,   9),
     ("age_years",              5,  95),
     ("gender_female",          0,   1),
@@ -194,13 +220,12 @@ def main() -> None:
     df = pd.read_csv(DATA / "raw_encounters.csv", low_memory=False)
     n0 = len(df)
 
-    df = df[~df["discharge_disposition_id"].isin(DEAD_OR_HOSPICE)]
+    df = cohort(df)
     n1 = len(df)
-    df = df.sort_values("encounter_id").drop_duplicates("patient_nbr", keep="first")
-    n2 = len(df)
     print(f"  {n0:,} encounters")
     print(f"  {n1:,} after dropping death/hospice discharges  (-{n0-n1:,})")
-    print(f"  {n2:,} after keeping first encounter per patient (-{n1-n2:,})")
+    print(f"  {df['patient_nbr'].nunique():,} distinct patients, "
+          f"{n1/df['patient_nbr'].nunique():.2f} encounters each on average")
 
     y = (df["readmitted"] == "<30").astype(int).to_numpy()
     raw = build_raw_frame(df)
@@ -304,7 +329,8 @@ def main() -> None:
 
     (REPORTS / "reference_metrics.json").write_text(json.dumps({
         "n_encounters_raw": int(n0),
-        "n_after_cohort": int(n2),
+        "n_after_cohort": int(n1),
+        "n_distinct_patients": int(df["patient_nbr"].nunique()),
         "n_train": int(len(tr)), "n_test": int(len(te)),
         "base_rate_test": float(yte.mean()),
         "auc": float(auc),

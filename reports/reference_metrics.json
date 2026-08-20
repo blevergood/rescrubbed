@@ -1,27 +1,28 @@
 {
   "n_encounters_raw": 101766,
-  "n_after_cohort": 69990,
-  "n_train": 52492,
-  "n_test": 17498,
-  "base_rate_test": 0.09069607955194879,
-  "auc": 0.6352121641343267,
-  "auc_gradient_boosting_ceiling": 0.6439785547815458,
+  "n_after_cohort": 99343,
+  "n_distinct_patients": 69990,
+  "n_train": 74333,
+  "n_test": 25010,
+  "base_rate_test": 0.11563374650139945,
+  "auc": 0.6508339542954381,
+  "auc_gradient_boosting_ceiling": 0.6590276837162974,
   "auc_published_logreg": 0.642,
   "auc_published_xgboost_best": 0.667,
-  "average_precision": 0.14630806051217585,
-  "threshold_moderate": -2.3376854969058924,
-  "threshold_high": -1.932730603099604,
-  "high_band_precision": 0.1543257989088075,
-  "high_band_recall": 0.2495274102079395,
-  "high_band_f1": 0.19070551408620273,
+  "average_precision": 0.19962097335248766,
+  "threshold_moderate": -2.1010310277330992,
+  "threshold_high": -1.7219792576785284,
+  "high_band_precision": 0.21182008368200836,
+  "high_band_recall": 0.2800829875518672,
+  "high_band_f1": 0.24121500893388922,
   "band_fractions": {
-    "low": 0.6016116127557435,
-    "moderate": 0.25174305634929706,
-    "high": 0.14664533089495943
+    "low": 0.5982407037185126,
+    "moderate": 0.24886045581767294,
+    "high": 0.15289884046381447
   },
   "band_readmission_rates": {
-    "low": 0.061555998860074096,
-    "moderate": 0.12326901248581158,
-    "high": 0.1543257989088075
+    "low": 0.07766341398208795,
+    "moderate": 0.14781491002570693,
+    "high": 0.21182008368200836
   }
 }

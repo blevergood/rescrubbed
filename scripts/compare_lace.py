@@ -35,7 +35,7 @@ from sklearn.metrics import roc_auc_score
 warnings.filterwarnings("ignore")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_reference import (  # noqa: E402
-    DEAD_OR_HOSPICE, FEATURE_NAMES, RANDOM_STATE, build_raw_frame, scale_box,
+    FEATURE_NAMES, RANDOM_STATE, build_raw_frame, cohort, scale_box,
 )
 from twin import load_model  # noqa: E402
 from sklearn.model_selection import GroupShuffleSplit  # noqa: E402
@@ -110,8 +110,7 @@ def lace_points(los: int, emergency: bool, charlson: int, ed_visits: int) -> int
 
 def main() -> None:
     df = pd.read_csv(ROOT / "data" / "raw_encounters.csv", low_memory=False)
-    df = df[~df["discharge_disposition_id"].isin(DEAD_OR_HOSPICE)]
-    df = df.sort_values("encounter_id").drop_duplicates("patient_nbr", keep="first")
+    df = cohort(df)
 
     y_all = (df["readmitted"] == "<30").astype(int).to_numpy()
     X_all = scale_box(build_raw_frame(df).to_numpy(dtype=np.float64))

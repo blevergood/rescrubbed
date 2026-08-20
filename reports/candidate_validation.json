@@ -1,95 +1,95 @@
 [
   {
-    "label": "cheapest passing",
+    "label": "degree 127, 9 levels ",
     "steepness": 24,
     "degree": 127,
     "levels": 9,
     "depth": 11,
-    "flips_heldout": 5,
-    "n_heldout": 17498,
-    "flips_cohort": 18,
-    "n_cohort": 69990,
-    "flips_adversarial": 921,
+    "flips_heldout": 9,
+    "n_heldout": 25010,
+    "flips_cohort": 31,
+    "n_cohort": 99343,
+    "flips_adversarial": 1007,
     "n_adversarial": 200000,
     "headroom_percentiles": {
-      "p0": 2.5545077647848302e-05,
-      "p1": 0.024918569010829117,
-      "p10": 0.23383736733731553,
-      "p50": 0.49641008411883547
+      "p0": 2.7058779863864402e-05,
+      "p1": 0.025999969139465975,
+      "p10": 0.23208932749776642,
+      "p50": 0.49728460400797303
     },
     "patients_at_risk_by_noise": {
       "1e-09": 0,
       "1e-07": 0,
       "1e-05": 0,
       "1e-04": 2,
-      "1e-03": 29
+      "1e-03": 36
     },
     "observed_flips_by_noise": {
       "1e-05": 0,
       "1e-04": 0,
-      "1e-03": 7
+      "1e-03": 9
     }
   },
   {
-    "label": "zero flips",
+    "label": "degree 159, 10 levels",
     "steepness": 24,
     "degree": 159,
     "levels": 10,
     "depth": 12,
-    "flips_heldout": 0,
-    "n_heldout": 17498,
-    "flips_cohort": 1,
-    "n_cohort": 69990,
-    "flips_adversarial": 168,
+    "flips_heldout": 1,
+    "n_heldout": 25010,
+    "flips_cohort": 6,
+    "n_cohort": 99343,
+    "flips_adversarial": 137,
     "n_adversarial": 200000,
     "headroom_percentiles": {
-      "p0": 7.38834493745344e-05,
-      "p1": 0.024981453083822203,
-      "p10": 0.234007941080526,
-      "p50": 0.4948829678959754
+      "p0": 1.0590893538164892e-05,
+      "p1": 0.026462037692513152,
+      "p10": 0.2348949075487383,
+      "p50": 0.4966083524131477
     },
     "patients_at_risk_by_noise": {
       "1e-09": 0,
       "1e-07": 0,
       "1e-05": 0,
-      "1e-04": 1,
-      "1e-03": 30
+      "1e-04": 5,
+      "1e-03": 41
     },
     "observed_flips_by_noise": {
       "1e-05": 0,
-      "1e-04": 0,
-      "1e-03": 7
+      "1e-04": 2,
+      "1e-03": 5
     }
   },
   {
-    "label": "zero flips alt",
+    "label": "degree 191, 10 levels",
     "steepness": 24,
     "degree": 191,
     "levels": 10,
     "depth": 12,
     "flips_heldout": 0,
-    "n_heldout": 17498,
-    "flips_cohort": 1,
-    "n_cohort": 69990,
-    "flips_adversarial": 31,
+    "n_heldout": 25010,
+    "flips_cohort": 2,
+    "n_cohort": 99343,
+    "flips_adversarial": 130,
     "n_adversarial": 200000,
     "headroom_percentiles": {
-      "p0": 2.0770997593899665e-05,
-      "p1": 0.024927721377873125,
-      "p10": 0.23422513960590266,
-      "p50": 0.4948878682262574
+      "p0": 3.0838085876894183e-05,
+      "p1": 0.02641091314704511,
+      "p10": 0.23509302837868518,
+      "p50": 0.4967474376263965
     },
     "patients_at_risk_by_noise": {
       "1e-09": 0,
       "1e-07": 0,
       "1e-05": 0,
-      "1e-04": 2,
-      "1e-03": 26
+      "1e-04": 3,
+      "1e-03": 43
     },
     "observed_flips_by_noise": {
       "1e-05": 0,
-      "1e-04": 0,
-      "1e-03": 8
+      "1e-04": 1,
+      "1e-03": 10
     }
   }
 ]

@@ -201,9 +201,9 @@ the design carries no transciphering layer or signature scheme.
    decrypted outputs were ever shared back to the vendor.
 
 8. **The quality of the model itself.** This design reproduces the reference
-   model. That model reaches a ranking quality of 0.635 against a 0.644 ceiling
+   model. That model reaches a ranking quality of 0.651 against a 0.659 ceiling
    measured on the same features; roughly 15% of the patients it flags as
-   high-risk are readmitted, against a 9.1% background rate. See
+   high-risk are readmitted, against an 11.6% background rate. See
    [`../reports/results.md`](../reports/results.md).
 
 ---
@@ -216,7 +216,7 @@ This design rejects no patient.
 
 Before encrypting, the client clips each field to a published clinical range
 (`data/feature_bounds.csv`) and maps it to 0–1. Every field is then within 0–1
-and the weights are fixed, so the score is confined to **[-4.24, +1.37]** by
+and the weights are fixed, so the score is confined to **[-4.18, +1.65]** by
 arithmetic over the input contract rather than by observation of a sample. The
 polynomial is fitted over that interval plus a 2% margin.
 

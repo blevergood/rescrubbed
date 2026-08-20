@@ -98,16 +98,21 @@ this set being public raises no patient privacy issue during development.
 - Dropped encounters ending in death or hospice transfer (2,423). A patient who
   died cannot be readmitted, so keeping them teaches the model that "will not
   return" is predictable from the discharge disposition.
-- Kept only each patient's first encounter (29,353 dropped). Without this the
-  same patient appears in both training and test data. Many published results on
-  this dataset skip this step, which is why our numbers sit below theirs.
+- Kept every remaining encounter, including repeat admissions. The deployed
+  system scores discharges rather than patients, so a frequent admitter carries
+  the weight of each of their discharges, and those repeat visits are where much
+  of the signal sits. Discarding them costs 0.015 AUC.
 
-69,990 patients remain, 9.1% readmitted within 30 days.
+The train and test halves are split on patient_nbr, so no individual appears on
+both sides. That, rather than throwing away repeat visits, is what stops the
+model memorising a person.
+
+99,343 encounters across 69,990 patients remain, 11.6% readmitted within 30 days.
 
 **Model form.** Regularised logistic regression. On this dataset published
 gradient boosting reaches around 0.667 ranking quality and published logistic
 regression around 0.642; a gradient-boosting model fitted on our feature set
-reaches 0.644 against our linear model's 0.635. A tree ensemble is all
+reaches 0.659 against our linear model's 0.651. A tree ensemble is all
 comparisons and branching, which is hostile to encrypted computation.
 
 Its second property is validation: scikit-learn's implementation is a
@@ -121,7 +126,7 @@ not listed there are not used. Extreme values are clipped rather than rejected;
 Stage 6 covers what that buys.
 
 **Metric.** Ranking quality (AUC) and precision/recall on the high-risk band. At
-a 9.1% readmission rate, a model that predicts "nobody returns" scores 91%
+an 11.6% readmission rate, a model that predicts "nobody returns" scores 91%
 accuracy at zero recall.
 
 ---
@@ -166,7 +171,7 @@ the cost of 5 rotation keys and a second code path.
 ### The provable range
 
 Every field is clipped into 0–1 before encryption and the weights are fixed, so
-the score is confined to **[-4.24, +1.37]** by arithmetic over the input contract
+the score is confined to **[-4.18, +1.65]** by arithmetic over the input contract
 rather than by estimate from a sample.
 
 The polynomial approximating the band staircase is valid only over the interval
@@ -192,7 +197,7 @@ patients regardless of degree. Too steep and the polynomial cannot follow it at
 affordable degree: steepness 48 at degree 31 misbands 1,973. The optimum sits at
 steepness 24.
 
-| Option | Depth | Patients misbanded (of 69,990) | Batch upload |
+| Option | Depth | Patients misbanded (of 99,343) | Batch upload |
 |---|---|---|---|
 | degree 127 | 11 | 8 | 336 MiB |
 | **degree 191** | **12** | **1** | **364 MiB** |
@@ -221,15 +226,15 @@ decode budget has 94 bits of headroom.
 |---|---|
 | Weighted tally vs scikit-learn's own implementation | identical (0.00e+00) |
 | Decision rule matches the reference | two threshold comparisons |
-| Band agreement, 17,498 held-out patients | **100.00%** (0 differ) |
-| High-band precision | 0.1543 → 0.1543 (delta +0.00000) |
-| High-band recall | 0.2495 → 0.2495 (delta +0.00000) |
-| Worst polynomial error across the whole provable range | 1.57e-04 |
+| Band agreement, 25,010 held-out patients | **100.00%** (0 differ) |
+| High-band precision | 0.2118 → 0.2118 (delta +0.00000) |
+| High-band recall | 0.2801 → 0.2801 (delta +0.00000) |
+| Worst polynomial error across the whole provable range | 3.04e-04 |
 | Decode budget | +94 bits spare |
 | Rotate-and-sum path reproduces the batch tally | 4.44e-16 |
 
 Recorded noise tolerance: at the expected encryption noise of 1e-5, zero of
-17,498 patients could change band. The Stage 8 pass criterion is therefore
+25,010 patients could change band. The Stage 8 pass criterion is therefore
 measured error below 1e-4 with 100% band agreement.
 
 ---
@@ -237,7 +242,7 @@ measured error below 1e-4 with 100% band agreement.
 ## Roads not taken
 
 - **Gradient boosting or a neural network.** Buys about 0.01 ranking quality
-  (0.644 against 0.635) for a circuit of comparisons and branching.
+  (0.659 against 0.651) for a circuit of comparisons and branching.
 - **Returning the exact score or probability.** Hands the vendor's model to the
   hospital in 29 queries.
 - **Two separate threshold comparisons.** One polynomial over the whole staircase

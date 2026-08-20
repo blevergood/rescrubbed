@@ -3,9 +3,9 @@
 
 Three checks the headline sweep does not make:
 
-  1. Does the agreement hold on ALL 69,990 cohort patients, not just the 17,498
-     held out? A setting that is perfect on one sample and not the other is
-     fitting the sample.
+  1. Does the agreement hold across the whole cohort, not just the held-out
+     split? A setting that is perfect on one sample and not the other is fitting
+     the sample.
   2. How much encryption noise can the design absorb before any patient's band
      changes? This becomes the objective pass criterion for the encrypted run:
      measured error below the recorded tolerance, rather than an arbitrary
@@ -26,7 +26,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_reference import (  # noqa: E402
-    DEAD_OR_HOSPICE, FEATURE_NAMES, build_raw_frame, scale_box,
+    FEATURE_NAMES, build_raw_frame, cohort, scale_box,
 )
 from twin import Twin, TwinConfig, load_model, reference_band  # noqa: E402
 
@@ -35,17 +35,21 @@ DATA = ROOT / "data"
 REPORTS = ROOT / "reports"
 
 CANDIDATES = [
-    ("cheapest passing", 24, 127),
-    ("zero flips",       24, 159),
-    ("zero flips alt",   24, 191),
+    ("degree 127, 9 levels ", 24, 127),
+    ("degree 159, 10 levels", 24, 159),
+    ("degree 191, 10 levels", 24, 191),
 ]
 SCALING_BITS = 45
 
 
 def full_cohort() -> np.ndarray:
-    df = pd.read_csv(DATA / "raw_encounters.csv", low_memory=False)
-    df = df[~df["discharge_disposition_id"].isin(DEAD_OR_HOSPICE)]
-    df = df.sort_values("encounter_id").drop_duplicates("patient_nbr", keep="first")
+    """Every encounter the reference model was built on, held-out and training.
+
+    Must match build_reference's cohort exactly. It keeps repeat admissions, so
+    the frequent admitters that dominate the deployed population are represented
+    here too.
+    """
+    df = cohort(pd.read_csv(DATA / "raw_encounters.csv", low_memory=False))
     return scale_box(build_raw_frame(df).to_numpy(dtype=np.float64))
 
 
