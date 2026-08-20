@@ -41,13 +41,15 @@ Hospital  --[ encryption context + public key + evaluation keys ]-->  Vendor
 |---|---|---|
 | Public circuit parameters (`circuit.txt`) | < 1 KiB | Yes, both sides hold it |
 | Encryption context (parameters) | < 1 MiB | Yes |
-| Public key (used to encrypt) | 13 MiB | Yes |
-| Relinearisation key (needed to multiply) | 54 MiB | Yes |
-| Rotation keys (single-patient mode only, 5 of them) | 270 MiB | Yes |
+| Relinearisation key (needed to multiply) | 48 MiB | Yes |
+| Rotation keys (single-patient mode only, 5 of them) | 240 MiB | Yes |
+| **Public key (used to encrypt)** | 12 MiB | **Never** |
 | **Secret key (used to decrypt)** | 6.5 MiB | **Never** |
 
-The secret key never leaves the hospital host and never crosses the network. The
-vendor's home directory is provisioned without it, and the server process exits
+Neither the secret key nor the public key crosses the network. The secret key
+would let the vendor read the data; the public key it simply has no use for,
+since it only computes on ciphertext it is handed and never encrypts anything.
+The vendor's home directory is provisioned without either, and the server process exits
 with status 2 if a secret-key file is present in its home when it starts.
 
 The hospital needs the ring size, depth and field order to build a matching
@@ -69,9 +71,9 @@ Two request shapes, sharing one model and one band polynomial:
 |---|---|---|
 | Layout | One ciphertext per field; one slot per patient | All 28 fields of one patient inside one ciphertext |
 | Patients per request | up to 32,768 | 1 |
-| Upload | 364 MiB | 13 MiB |
-| Download | 4 MiB | 4 MiB |
-| Per patient | 11.4 KiB | 13 MiB |
+| Upload | 336 MiB | 12 MiB |
+| Download | 1 MiB | 1 MiB |
+| Per patient | 10.5 KiB | 12 MiB |
 | Rotation keys needed | none | 5 |
 
 Nothing else travels between the two hosts.

@@ -31,7 +31,8 @@ cp "$ROOT/model/circuit.txt" "$CLIENT/"
 "$ROOT/build/rescrubbed_keygen" "$CLIENT" "$APP_MODE"
 
 # ── provision the vendor's host: no secret key, no patient data ──────────────
-cp "$CLIENT/cc.bin" "$CLIENT/pk.bin" "$CLIENT/mk.bin" "$CLIENT/rk.bin" "$SERVER/"
+# No public key: the vendor never encrypts, so it has no use for one.
+cp "$CLIENT/cc.bin" "$CLIENT/mk.bin" "$CLIENT/rk.bin" "$SERVER/"
 cp "$ROOT/model/model.txt" "$ROOT/model/circuit.txt" "$SERVER/"
 
 echo

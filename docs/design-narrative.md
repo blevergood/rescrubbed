@@ -160,8 +160,8 @@ cost. The row-major alternative needs 32 ciphertexts instead of 28, plus rotatio
 keys, for the same result.
 
 **A second layout for the single-patient path.** Reusing the batch layout to
-score one patient uploads 364 MiB. Instead that patient's 28 fields go into one
-ciphertext and are summed across slots by rotate-and-add: 13 MiB per query, at
+score one patient uploads 336 MiB. Instead that patient's 28 fields go into one
+ciphertext and are summed across slots by rotate-and-add: 12 MiB per query, at
 the cost of 5 rotation keys and a second code path.
 
 ---
@@ -199,8 +199,8 @@ steepness 24.
 
 | Option | Depth | Patients misbanded (of 99,343) | Batch upload |
 |---|---|---|---|
-| degree 127 | 11 | 8 | 336 MiB |
-| **degree 191** | **12** | **1** | **364 MiB** |
+| degree 127 | 10 | 9 | 308 MiB |
+| **degree 191** | **11** | **1** | **336 MiB** |
 
 **Chosen: degree 191.** Expressed as percentages the choice reads as a tradeoff
 ("8% more data, 10% more time"). In absolute terms it is 28 MiB per batch of
@@ -253,7 +253,7 @@ measured error below 1e-4 with 100% band agreement.
 - **An input filter that rejects out-of-range patients.** Clipping makes the
   range guarantee provable, so nothing is rejected and the composition question
   does not arise.
-- **Bootstrapping**, the refresh machinery for deep circuits. At depth 12 against
+- **Bootstrapping**, the refresh machinery for deep circuits. At depth 11 against
   a ceiling of 25–30 it is not needed. It would cost 10–15 levels of overhead and
   commit the deployment to a software-only path.
 

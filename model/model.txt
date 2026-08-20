@@ -4,7 +4,7 @@
 n_features 28
 feature_slot_stride 32
 ring_dim 65536
-mult_depth 12
+mult_depth 11
 scaling_mod_size 45
 first_mod_size 60
 noise_tolerance 0.0001

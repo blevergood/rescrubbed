@@ -198,11 +198,11 @@ Expected output, scoring the whole 25,010-patient census:
 
 ```
 negative test: server refused a planted secret key (exit 2, guard message)  [OK]
-[encrypt] mode=batch patients=25010 ciphertexts=28 bytes=381765076 (364.08 MiB)
+[encrypt] mode=batch patients=25010 ciphertexts=28 bytes=352399964 (336.08 MiB)
 [encrypt] input box: 470 field value(s) across 455 patient(s) saturated at a
           published bound; 0 patients rejected
-[server]  received 381765076 bytes of ciphertext, contents unreadable to this process
-[server]  returned 4196209 bytes, still encrypted
+[server]  received 352399964 bytes of ciphertext, contents unreadable to this process
+[server]  returned 1050163 bytes, still encrypted
 
   band        patients    share   actually readmitted
   low           14,962   59.8%                 7.8%
@@ -210,7 +210,7 @@ negative test: server refused a planted secret key (exit 2, guard message)  [OK]
   high           3,824   15.3%                21.2%
 
   patients whose band changed : 0 of 25,010
-  largest numeric difference  : 3.184e-07   (budget 1e-04)
+  largest numeric difference  : 2.712e-07   (budget 1e-04)
 
  PASS: encryption preserved every band
 ```
@@ -326,9 +326,9 @@ Background readmission rate: 11.6%.
 
 | | Nightly census | Single patient |
 |---|---|---|
-| Upload | 364 MiB (11.4 KiB per patient at a full batch) | 13 MiB |
-| Download | 4 MiB | 4 MiB |
-| Setup keys, sent once | 67 MiB | 337 MiB |
+| Upload | 336 MiB (10.5 KiB per patient at a full batch) | 12 MiB |
+| Download | 1 MiB | 1 MiB |
+| Setup keys, sent once | 48 MiB | 288 MiB |
 
 ## Results
 

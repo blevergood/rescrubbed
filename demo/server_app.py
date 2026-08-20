@@ -99,7 +99,7 @@ def main() -> int:
     if (home / "sk.bin").exists():
         log("FATAL: a secret key is present in the server home. Refusing to start.")
         return 2
-    for required in ("cc.bin", "pk.bin", "mk.bin", "rk.bin", "model.txt"):
+    for required in ("cc.bin", "mk.bin", "rk.bin", "model.txt"):
         if not (home / required).exists():
             log(f"FATAL: {required} missing from the server home")
             return 2

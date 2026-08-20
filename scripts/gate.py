@@ -72,7 +72,19 @@ def main() -> None:
     n_feat = len(w)
 
     levels = 1 + cheb_levels(DEGREE)
-    depth = levels + 2
+    # One spare level above what the circuit consumes.
+    #
+    # Depth 10, with no spare at all, was measured and also decodes cleanly, on a
+    # base-rate batch and on a worst case of 32,768 slots all carrying the maximum
+    # band value. Measured precision is identical at depths 10, 11 and 12 (25 bits,
+    # log error 20), so the spare levels buy no accuracy: the noise here comes from
+    # the Chebyshev evaluation, not from the modulus budget.
+    #
+    # The one level is kept anyway. Decode failure in CKKS is a cliff rather than a
+    # gradual loss, and the predicted margin at depth 10 is +4 bits against +49 here.
+    # A failed decrypt takes a whole batch with it, which is not worth 8% of the
+    # upload. Set this to `levels + 0` to reclaim it.
+    depth = levels + 1
     cfg = TwinConfig(STEEPNESS, DEGREE, SCALING_BITS, depth)
     tw = Twin(model, cfg)
 

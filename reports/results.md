@@ -170,7 +170,7 @@ The figures quoted in the README are the third column.
 | Scheme | CKKS (approximate arithmetic on real numbers) |
 | Ring dimension | 65,536, giving 32,768 patient slots per ciphertext |
 | Security | 128-bit classical (HEStd_128_classic) |
-| Multiplicative depth | 12 (circuit uses 10; 2 spare) |
+| Multiplicative depth | 11 (circuit uses 10; 1 spare) |
 | Scaling / first modulus | 45 / 60 bits |
 | Band polynomial | Chebyshev degree 191, steepness 24, fitted over [-4.294, 1.762] |
 | Predicted decode margin | +94 bits, confirmed by 4 clean runs |
@@ -190,23 +190,24 @@ The figures quoted in the README are the third column.
 
 | | Estimated | Measured |
 |---|---|---|
-| One ciphertext | 13 MiB | 13.0 MiB |
-| Batch upload (28 fields) | 364 MiB | **364.1 MiB** |
-| Single-patient upload | 13 MiB | **13.0 MiB** |
-| Result returned | 3 MiB | 4.0 MiB |
-| Setup keys, batch mode | ~53 MiB | 67.0 MiB |
-| Setup keys, single-patient mode | ~253 MiB | 337.0 MiB |
+| One ciphertext | 12 MiB | 12.0 MiB |
+| Batch upload (28 fields) | 336 MiB | **336.1 MiB** |
+| Single-patient upload | 12 MiB | **12.0 MiB** |
+| Result returned | 1 MiB | **1.0 MiB** |
+| Setup keys, batch mode | ~48 MiB | 48.0 MiB |
+| Setup keys, single-patient mode | ~288 MiB | 288.0 MiB |
 
-The result ciphertext came back one level higher than predicted, at 4 MiB rather
-than 3, and the key material is larger than the rule-of-thumb formula suggests.
+The result is compressed to a single modulus tower before it is sent, which is
+all the band needs, and the server is never given a public key because it never
+encrypts anything.
 
 ### Reading the cost figures
 
-Per patient, the batch mode uploads 14.9 KiB. At a full 32,768-patient batch that
-falls to 11.4 KiB per patient, because the ciphertexts are a fixed size whether or
+Per patient, the batch mode uploads 13.8 KiB. At a full 32,768-patient batch that
+falls to 10.5 KiB per patient, because the ciphertexts are a fixed size whether or
 not every slot is used. The 25,010-patient run fills a little over half of them.
 
-The single-patient mode uploads 13 MiB to score one person, because a ciphertext
+The single-patient mode uploads 12 MiB to score one person, because a ciphertext
 costs what it costs regardless of how few slots carry data. That is inherent to
 encrypted computation at this security level, and it is why the batch shape
 exists.

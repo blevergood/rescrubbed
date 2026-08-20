@@ -268,7 +268,7 @@
   ],
   "ring_dim": 65536,
   "slots": 32768,
-  "multiplicative_depth": 12,
+  "multiplicative_depth": 11,
   "levels_used": 10,
   "scaling_mod_size": 45,
   "first_mod_size": 60,
@@ -291,5 +291,5 @@
   "reference_high_precision": 0.21182008368200836,
   "reference_high_recall": 0.2800829875518672,
   "max_polynomial_error": 0.00030445947450452593,
-  "predicted_decode_margin_bits": 93.99993571595195
+  "predicted_decode_margin_bits": 48.99993571595195
 }

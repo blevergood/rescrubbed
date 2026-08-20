@@ -93,9 +93,11 @@ T0=$(date +%s.%N)
 "$BUILD/rescrubbed_keygen" "$CLIENT" "$APP_MODE"
 T_KEYGEN=$($PY -c "print(f'{$(date +%s.%N)-$T0:.2f}')")
 
-# ── 2. provision the server home: context, public + eval keys, model.
+# ── 2. provision the server home: context, evaluation keys, model.
 #      No secret key. No patient data. Safe to copy to untrusted infrastructure.
-cp "$CLIENT/cc.bin" "$CLIENT/pk.bin" "$CLIENT/mk.bin" "$CLIENT/rk.bin" "$SERVER/"
+#      No public key either: the server only computes on ciphertext it is given,
+#      so it never encrypts and has no use for one.
+cp "$CLIENT/cc.bin" "$CLIENT/mk.bin" "$CLIENT/rk.bin" "$SERVER/"
 cp "$ROOT/model/model.txt" "$ROOT/model/circuit.txt" "$SERVER/"
 [ ! -f "$SERVER/sk.bin" ] || { echo "[FATAL] secret key in server home"; exit 1; }
 [ ! -f "$CLIENT/model.txt" ] || { echo "[FATAL] weights present in client home"; exit 1; }
@@ -167,7 +169,7 @@ T_DEC=$($PY -c "print(f'{$(date +%s.%N)-$T0:.2f}')")
 # ── 6. report ────────────────────────────────────────────────────────────────
 CT_IN=$(cat "$CLIENT"/ct_x*.bin | wc -c | tr -d ' ')
 CT_OUT=$(wc -c < "$CLIENT/ct_result.bin" | tr -d ' ')
-KEYS=$(cat "$SERVER/cc.bin" "$SERVER/pk.bin" "$SERVER/mk.bin" "$SERVER/rk.bin" | wc -c | tr -d ' ')
+KEYS=$(cat "$SERVER/cc.bin" "$SERVER/mk.bin" "$SERVER/rk.bin" | wc -c | tr -d ' ')
 
 exec $PY "$ROOT/scripts/compare.py" \
     --decrypted "$RUN/decrypted.csv" \

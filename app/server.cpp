@@ -181,6 +181,17 @@ int main(int argc, char* argv[]) try {
     const double secs = std::chrono::duration<double>(
         std::chrono::steady_clock::now() - t0).count();
 
+    // Drop the unused modulus towers before serialising. The circuit finishes
+    // with spare levels it will never spend, and each one is a full polynomial
+    // per ciphertext on the wire. The band is a small number read by rounding,
+    // so one tower carries it with room to spare.
+    //
+    // COMPRESS_TOWERS exists to check that claim rather than assume it: the
+    // harness sweeps it and confirms the decrypted bands are unchanged.
+    unsigned towers = 1;
+    if (const char* e = std::getenv("COMPRESS_TOWERS")) towers = unsigned(std::stoul(e));
+    if (towers > 0) result = cc->Compress(result, towers);
+
     const auto out = home / rescrubbed::files::kResult;
     if (!Serial::SerializeToFile(out.string(), result, SerType::BINARY))
         throw std::runtime_error("failed to write " + out.string());
