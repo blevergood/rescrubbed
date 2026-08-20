@@ -143,7 +143,23 @@ Three qualifications on that comparison:
 
 The directly comparable benchmarks are the published results on this dataset:
 logistic regression around 0.642 and gradient boosting around 0.667. Ours sits at
-0.651, and at 98.8% of the 0.659 ceiling measured on our own features.
+0.651, above the published linear model.
+
+### Stating that as a proportion
+
+AUC starts at 0.5, since a coin flip ranks two patients correctly half the time.
+Dividing one AUC by another therefore carries a fixed head start that has nothing
+to do with the model: on that arithmetic a model with no skill at all would score
+75.9% of our ceiling. Counting only the part above chance removes it.
+
+| Compared against | AUC | Skill above chance | Proportion captured |
+|---|---|---|---|
+| Ours | 0.6508 | 0.1508 | |
+| Ceiling on these features | 0.6590 | 0.1590 | **94.8%** |
+| Published logistic regression | 0.6420 | 0.1420 | **106.2%** |
+| Best published (XGBoost) | 0.6670 | 0.1670 | **90.3%** |
+
+The figures quoted in the README are the third column.
 
 ---
 
